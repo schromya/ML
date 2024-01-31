@@ -37,24 +37,23 @@ def MSE_gradients(data:np.array, weights) -> (float, np.array):
 
 
 
-def regression(data: [(float, ...)]) -> [float, ... ]:
+def regression(data: [(float, ...)], learning_rate=0.001, iterations=1000) -> [float, ... ]:
     """
     @brief      Finds best fit line for data 
     @param data      Array of tuples of any length [(x,y, ...), (x,y, ...), ...]
+    @param learning_rate    Learning rate (de)
+    @param iterations       Number of iterations
     """
     len_weights = len(data[0])
     weights = np.zeros(len_weights)
 
-    LEARNING_RATE = 0.01
-    ITERATIONS = 500
     
-    for i in range(ITERATIONS):
+    for i in range(iterations):
         print("----------- Iteration", i)
         
         mse, gradients = MSE_gradients(data, weights)
 
-        previous_weights = weights
-        weights = weights - LEARNING_RATE * gradients
+        weights = weights - learning_rate * gradients
 
         print("   MSE:", mse)
         print("   Weights:", weights)
@@ -80,16 +79,6 @@ def graph_2D_data(data: [(float, float)], line_x:np.array = None, line_y:np.arra
 def main():
 
     np_data = np.array([
-        [1, 40],
-        [2,80],
-        [3,130],
-        [4,140],
-        [4, 150],
-        [5, 170],
-        [6,173]
-    ])
-
-    np_data = np.array([
         [1, 3, 40],
         [2, 7, 80],
         [3, 10, 130],
@@ -99,7 +88,12 @@ def main():
         [6, 2, 173]
     ])
 
-    weights = regression(np_data)
+
+    np_data = np.array([[8.6,9.6,3.6,9.6,7.6,2.6,4.6,6.6,9.6,9.6],[20,58,29,42,20,47,26,50,52,55], 
+                     [33.694,40.314,22.484,38.554,31.254,22.024,24.594,32.114,39.654,39.984]]).T
+    print("Data:", np_data)
+
+    weights = regression(np_data, 0.001, 50000)
     print("WEIGHTS:", weights)
 
     # line_x = np.linspace(0, 10, 100)
