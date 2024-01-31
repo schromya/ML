@@ -6,6 +6,7 @@ Date: 1/25/2024
 
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 def MSE_gradients(data:np.array, weights) -> (float, np.array):
     """
@@ -27,6 +28,10 @@ def MSE_gradients(data:np.array, weights) -> (float, np.array):
         gradients[1:] += 1/len_data * error * x
 
         mse += error ** 2 / (2 * len_data)
+        
+        if (math.isinf(mse)):
+            print("\n!!WARNING: MSE value was too large and overflowed!!")
+            exit()
 
     return mse, gradients
 
@@ -43,12 +48,16 @@ def regression(data: [(float, ...)]) -> [float, ... ]:
     LEARNING_RATE = 0.01
     ITERATIONS = 500
     
-    for _ in range(ITERATIONS):
+    for i in range(ITERATIONS):
+        print("----------- Iteration", i)
         
         mse, gradients = MSE_gradients(data, weights)
-        print("MSE:", mse)
 
+        previous_weights = weights
         weights = weights - LEARNING_RATE * gradients
+
+        print("   MSE:", mse)
+        print("   Weights:", weights)
 
     return weights
 
@@ -80,12 +89,22 @@ def main():
         [6,173]
     ])
 
+    np_data = np.array([
+        [1, 3, 40],
+        [2, 7, 80],
+        [3, 10, 130],
+        [4, 52, 140],
+        [4, 75, 150],
+        [5, 3, 170],
+        [6, 2, 173]
+    ])
+
     weights = regression(np_data)
     print("WEIGHTS:", weights)
 
-    line_x = np.linspace(0, 10, 100)
-    line_y = weights[1] * line_x + weights[0]
-    graph_2D_data(np_data, line_x, line_y)
+    # line_x = np.linspace(0, 10, 100)
+    # line_y = weights[1] * line_x + weights[0]
+    # graph_2D_data(np_data, line_x, line_y)
     
 
 if __name__ == "__main__":
