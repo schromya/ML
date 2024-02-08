@@ -10,31 +10,53 @@ class Regression:
         return
 
     @classmethod
-    def train(cls, data: [(float, ...)], learning_rate=0.001, iterations=1000) -> ([float, ... ], [float, ...]):
+    def train(cls, data: np.array, learning_rate=0.001, iterations=1000) -> (np.array, np.array):
         """
-        @brief      Finds best fit line for data 
-        @param data      Array of tuples of any length [(x,y, ...), (x,y, ...), ...]
+        @brief  Finds best fit line for data 
+        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
         @param learning_rate    Learning rate (de)
         @param iterations       Number of iterations
         """
         len_weights = len(data[0])
         weights = np.zeros(len_weights)
-        mse_list = np.array([])
+        error_list = np.array([])
+
+        # Scale data automagically
+        data = cls.scale_data(data)
 
         
         for _ in range(iterations):
-            mse, gradients = cls.calculate_error_and_gradients(data, weights)
-            mse_list = np.append(mse_list, mse)
+            error, gradients = cls.calculate_error_and_gradients(data, weights)
+            error_list = np.append(error_list, error)
 
             weights = weights - learning_rate * gradients
 
-        return mse_list, weights
+        return error_list, weights
+    
+    @classmethod
+    def scale_data(cls, data: np.array) -> np.array:
+        """
+        @brief Z-score scales the input features (not the last y target in each array)
+        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
+        """
+        scaled_data = data.T
+
+        # TODO Avoid loops to be more efficient
+        for i, feature in enumerate(scaled_data[:-1]):
+            mean = feature.mean()
+            standard_deviation = feature.std()
+            scaled_data[i] = (scaled_data[i] - mean) / standard_deviation
+
+        return scaled_data.T
+
+
+    
     
     @classmethod
     def test(cls, data:np.array, weights:np.array) -> (float, np.array):
         """
         @brief Wrapper for calculating error and gradients 
-        @param data      Array of tuples of any length Array of tuples [(x1, x2, ...,  y), (x1, x2, ..., y), ...]
+        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
         @param weights   Array of weights (thetas)
         """
         return cls.calculate_error_and_gradients(data, weights)
@@ -54,7 +76,7 @@ class LinearMSE(Regression):
     def calculate_error_and_gradients(cls, data:np.array, weights:np.array) -> (float, np.array):
         """
         @brief      Finds MSE and gradients of the data given the weights
-        @param data      Array of tuples of any length Array of tuples [(x1, x2, ...,  y), (x1, x2, ..., y), ...]
+        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
         @param weights   Array of weights (thetas)
         """
 
@@ -78,6 +100,15 @@ class LinearMSE(Regression):
                 exit()
 
         return mse, gradients
+    
+    @classmethod
+    def test(cls, data:np.array, weights:np.array) -> (float, np.array):
+        """
+        @brief Wrapper for calculating error and gradients 
+        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
+        @param weights   Array of weights (thetas)
+        """
+        return cls.calculate_error_and_gradients(data, weights)
 
 class LogisticBinaryCrossEntropy(Regression):
     def __init__(self):
@@ -103,10 +134,8 @@ class LogisticBinaryCrossEntropy(Regression):
             y_hat = 1 / (1 + math.e ** -(weights[0] + np.dot(weights[1:], x)))
 
             # Cross Entropy Error
-            error = -y * math.log(y_hat + epsilon, 10) - (1 - y) * math.log(1-y_hat + epsilon, 10)  
+            error = -y * math.log(y_hat + epsilon) - (1 - y) * math.log(1-y_hat + epsilon)  
 
-            print("y_hat:", y_hat)
-            print("error:", error)
             # Derivatives of Cross Entropy Loss over len_data
             gradients[0] += 1/len_data * (y_hat - y) 
             gradients[1:] += 1/len_data * (y_hat - y)  * x
@@ -118,5 +147,30 @@ class LogisticBinaryCrossEntropy(Regression):
                 exit()
 
         return cross_entropy, gradients
+    
+    @classmethod
+    def calculate_accuracy(cls, data:np.array, weights:np.array) -> (np.array):
+        """
+        @brief Tests accuracy of data
+        @param data      Array of tuples of any length [(x1, x2, ...,  y), (x1, x2, ..., y), ...]
+        @param weights   Array of weights (thetas)
+        @return     Returns accuracy of test.
+        """
+        
+        data = cls.scale_data(data)
+        predictions = []
+        for i in range(len(data)):
+            x = data[i][:-1]
+            y_hat = 1 / (1 + math.exp(-(weights[0] + np.dot(weights[1:], x))))
+
+            predicted_label = 1 if y_hat >= 0.5 else 0
+
+            predictions.append(predicted_label)
+
+
+        # Calculate accuracy
+        accuracy = np.mean(data[:, -1] == predictions)
+
+        return accuracy
 
 
