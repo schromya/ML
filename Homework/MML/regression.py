@@ -1,7 +1,6 @@
 
 import numpy as np
 import math
-from enum import Enum
 
 
 class Regression:
@@ -41,7 +40,6 @@ class Regression:
         """
         scaled_data = data.T
 
-        # TODO Avoid loops to be more efficient
         for i, feature in enumerate(scaled_data[:-1]):
             mean = feature.mean()
             standard_deviation = feature.std()
@@ -50,23 +48,20 @@ class Regression:
         return scaled_data.T
 
 
-    
-    
-    @classmethod
-    def test(cls, data:np.array, weights:np.array) -> (float, np.array):
-        """
-        @brief Wrapper for calculating error and gradients 
-        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
-        @param weights   Array of weights (thetas)
-        """
-        return cls.calculate_error_and_gradients(data, weights)
-
     @classmethod
     def calculate_error_and_gradients(cls, data:np.array, weights:np.array) -> (float, np.array):
         """
         @brief This is specific to the child classes, so should be implemented there
         """
         return
+    
+    @classmethod
+    def calculate_prediction(cls, sample: np.array, weights: np.array) -> float:
+        """
+        @brief This is specific to the child classes, so should be implemented there
+        """
+        return
+
 
 class LinearMSE(Regression):
     def __init__(self):
@@ -100,15 +95,7 @@ class LinearMSE(Regression):
                 exit()
 
         return mse, gradients
-    
-    @classmethod
-    def test(cls, data:np.array, weights:np.array) -> (float, np.array):
-        """
-        @brief Wrapper for calculating error and gradients 
-        @param data     Array of arrays of any length [[x1, x2, ..., y], [x1, x2, ... y], ...]
-        @param weights   Array of weights (thetas)
-        """
-        return cls.calculate_error_and_gradients(data, weights)
+
 
 class LogisticBinaryCrossEntropy(Regression):
     def __init__(self):
@@ -170,7 +157,6 @@ class LogisticBinaryCrossEntropy(Regression):
 
         # Calculate accuracy
         accuracy = np.mean(data[:, -1] == predictions)
-
         return accuracy
 
 
