@@ -81,9 +81,6 @@ def graph_2D_data(data: [(float, float)], line_x:np.array = None, line_y:np.arra
 
 
 def main():
-
-
-
     np_data = np.array([[120,125, 161, 119, 118, 117, 159, 150],
                      [0, 0, 1, 0, 0, 0, 1, 1]]).T
     print("Data:", np_data)
